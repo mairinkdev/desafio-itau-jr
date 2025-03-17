@@ -17,68 +17,48 @@ class TransacaoServiceTest {
 
     @Test
     void deveAdicionarTransacaoValida() {
-        Transacao transacao = new Transacao();
-        transacao.setValor(100.0);
-        transacao.setDataHora(OffsetDateTime.now().minusMinutes(1));
+        // Arrange
+        Transacao transacao = new Transacao(100.0, OffsetDateTime.now().minusMinutes(5));
 
+        // Act & Assert
         assertDoesNotThrow(() -> transacaoService.adicionarTransacao(transacao));
     }
 
     @Test
     void deveRejeitarTransacaoComDataFutura() {
-        Transacao transacao = new Transacao();
-        transacao.setValor(100.0);
-        transacao.setDataHora(OffsetDateTime.now().plusMinutes(1));
+        // Arrange
+        Transacao transacao = new Transacao(100.0, OffsetDateTime.now().plusMinutes(5));
 
+        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> transacaoService.adicionarTransacao(transacao));
     }
 
     @Test
     void deveRejeitarTransacaoComValorNegativo() {
-        Transacao transacao = new Transacao();
-        transacao.setValor(-100.0);
-        transacao.setDataHora(OffsetDateTime.now().minusMinutes(1));
+        // Arrange
+        Transacao transacao = new Transacao(-100.0, OffsetDateTime.now().minusMinutes(5));
 
+        // Act & Assert
         assertThrows(IllegalArgumentException.class, () -> transacaoService.adicionarTransacao(transacao));
     }
 
     @Test
-    void deveLimparTodasAsTransacoes() {
-        Transacao transacao = new Transacao();
-        transacao.setValor(100.0);
-        transacao.setDataHora(OffsetDateTime.now().minusMinutes(1));
-        transacaoService.adicionarTransacao(transacao);
-
+    void deveRetornarEstatisticasCorretas() {
+        // Arrange
         transacaoService.limparTransacoes();
-        Estatistica estatistica = transacaoService.calcularEstatisticas();
+        OffsetDateTime agora = OffsetDateTime.now();
         
-        assertEquals(0, estatistica.getCount());
-        assertEquals(0.0, estatistica.getSum());
-        assertEquals(0.0, estatistica.getAvg());
-        assertEquals(0.0, estatistica.getMin());
-        assertEquals(0.0, estatistica.getMax());
-    }
+        transacaoService.adicionarTransacao(new Transacao(100.0, agora.minusSeconds(10)));
+        transacaoService.adicionarTransacao(new Transacao(200.0, agora.minusSeconds(20)));
+        transacaoService.adicionarTransacao(new Transacao(300.0, agora.minusSeconds(30)));
+        
+        // Transação fora do período de 60 segundos
+        transacaoService.adicionarTransacao(new Transacao(1000.0, agora.minusSeconds(61)));
 
-    @Test
-    void deveCalcularEstatisticasCorretamente() {
-        // Adiciona transações com diferentes valores
-        Transacao t1 = new Transacao();
-        t1.setValor(100.0);
-        t1.setDataHora(OffsetDateTime.now().minusSeconds(30));
-        transacaoService.adicionarTransacao(t1);
-
-        Transacao t2 = new Transacao();
-        t2.setValor(200.0);
-        t2.setDataHora(OffsetDateTime.now().minusSeconds(20));
-        transacaoService.adicionarTransacao(t2);
-
-        Transacao t3 = new Transacao();
-        t3.setValor(300.0);
-        t3.setDataHora(OffsetDateTime.now().minusSeconds(10));
-        transacaoService.adicionarTransacao(t3);
-
+        // Act
         Estatistica estatistica = transacaoService.calcularEstatisticas();
 
+        // Assert
         assertEquals(3, estatistica.getCount());
         assertEquals(600.0, estatistica.getSum());
         assertEquals(200.0, estatistica.getAvg());
@@ -87,25 +67,31 @@ class TransacaoServiceTest {
     }
 
     @Test
-    void deveIgnorarTransacoesAntigasNoCalculoDeEstatisticas() {
-        // Adiciona transação antiga (mais de 60 segundos)
-        Transacao t1 = new Transacao();
-        t1.setValor(100.0);
-        t1.setDataHora(OffsetDateTime.now().minusMinutes(2));
-        transacaoService.adicionarTransacao(t1);
+    void deveRetornarEstatisticasZeradasQuandoNaoHaTransacoes() {
+        // Arrange
+        transacaoService.limparTransacoes();
 
-        // Adiciona transação recente
-        Transacao t2 = new Transacao();
-        t2.setValor(200.0);
-        t2.setDataHora(OffsetDateTime.now().minusSeconds(30));
-        transacaoService.adicionarTransacao(t2);
-
+        // Act
         Estatistica estatistica = transacaoService.calcularEstatisticas();
 
-        assertEquals(1, estatistica.getCount());
-        assertEquals(200.0, estatistica.getSum());
-        assertEquals(200.0, estatistica.getAvg());
-        assertEquals(200.0, estatistica.getMin());
-        assertEquals(200.0, estatistica.getMax());
+        // Assert
+        assertEquals(0, estatistica.getCount());
+        assertEquals(0.0, estatistica.getSum());
+        assertEquals(0.0, estatistica.getAvg());
+        assertEquals(0.0, estatistica.getMin());
+        assertEquals(0.0, estatistica.getMax());
+    }
+
+    @Test
+    void deveLimparTodasTransacoes() {
+        // Arrange
+        transacaoService.adicionarTransacao(new Transacao(100.0, OffsetDateTime.now().minusMinutes(5)));
+        
+        // Act
+        transacaoService.limparTransacoes();
+        Estatistica estatistica = transacaoService.calcularEstatisticas();
+        
+        // Assert
+        assertEquals(0, estatistica.getCount());
     }
 } 

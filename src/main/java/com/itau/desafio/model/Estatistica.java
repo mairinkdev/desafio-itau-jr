@@ -1,14 +1,14 @@
 package com.itau.desafio.model;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Value;
 
-@Data
+@Value
 @Builder
 public class Estatistica {
-    private long count;
-    private double sum;
-    private double avg;
-    private double min;
-    private double max;
+    long count;
+    double sum;
+    double avg;
+    double min;
+    double max;
 } 
