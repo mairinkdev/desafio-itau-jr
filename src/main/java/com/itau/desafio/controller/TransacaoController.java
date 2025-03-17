@@ -1,6 +1,7 @@
 package com.itau.desafio.controller;
 
 import com.itau.desafio.model.Transacao;
+import com.itau.desafio.model.Estatistica;
 import com.itau.desafio.service.TransacaoService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -24,5 +25,10 @@ public class TransacaoController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.unprocessableEntity().build();
         }
+    }
+
+    @GetMapping("/estatistica")
+    public ResponseEntity<Estatistica> obterEstatisticas() {
+        return ResponseEntity.ok(transacaoService.calcularEstatisticas());
     }
 } 
