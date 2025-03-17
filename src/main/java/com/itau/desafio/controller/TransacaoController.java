@@ -31,4 +31,10 @@ public class TransacaoController {
     public ResponseEntity<Estatistica> obterEstatisticas() {
         return ResponseEntity.ok(transacaoService.calcularEstatisticas());
     }
+
+    @DeleteMapping("/transacao")
+    public ResponseEntity<Void> limparTransacoes() {
+        transacaoService.limparTransacoes();
+        return ResponseEntity.ok().build();
+    }
 } 

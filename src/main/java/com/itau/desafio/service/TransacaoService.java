@@ -49,4 +49,8 @@ public class TransacaoService {
                 .max(transacoesRecentes.stream().mapToDouble(Transacao::getValor).max().orElse(0.0))
                 .build();
     }
+
+    public void limparTransacoes() {
+        transacoes.clear();
+    }
 } 
